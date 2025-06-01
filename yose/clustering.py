@@ -10,17 +10,17 @@ class Clustering:
         self.export = export
         self.output_path=output_path
 
-    def build_distance_matrix(self, n_samples, combinations, similarities):
+    def build_distance_matrix(self, n_samples, combinations, distances):
         D = np.full((n_samples, n_samples), self.default_distance)
         np.fill_diagonal(D, 0.0)
 
-        for (i, j), dist in zip(combinations, similarities):
+        for (i, j), dist in zip(combinations, distances):
             D[i, j] = dist
             D[j, i] = dist
 
         return D
 
-    def clustering(self, D, combinations, similarities):
+    def clustering(self, distance_matrix):
         model = SpectralClustering(
             n_clusters=self.n_clusters,
             affinity='precomputed',
@@ -29,9 +29,9 @@ class Clustering:
         )
 
         beta = 1.0
-        S = np.exp(-beta * D / D.std())
+        similarity_matrix = np.exp(-beta * distance_matrix / distance_matrix.std())
 
-        labels = model.fit_predict(S)
+        labels = model.fit_predict(similarity_matrix)
 
         clusters = defaultdict(list)
         for idx, label in enumerate(labels):
@@ -72,9 +72,11 @@ class Clustering:
 
         print(f"クラスタリング結果を {self.output_path} に保存しました。")
 
-    def run(self, sentences, combinations, similarities):
-        D = self.build_distance_matrix(len(sentences), combinations, similarities)
-        clusters = self.clustering(D, combinations, similarities)
+    def run(self, sentences, combinations, distances):
+        distance_matrix = self.build_distance_matrix(len(sentences), combinations, distances)
+        clusters = self.clustering(distance_matrix)
+
         if self.export == True:
             self.export_clusters_to_html(sentences, clusters)
+
         return clusters

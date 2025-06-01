@@ -63,7 +63,7 @@ class SubspaceWRD:
 
         return t.T @ X
 
-    def evaluate_pairwise_similarity(self, combinations):
+    def evaluate_pairwise_distance(self, combinations):
         print("Batch {}/{} Start".format(self.batch_number, self.batches))
         self.batch_number += 1
 
@@ -140,7 +140,7 @@ class SubspaceWRD:
         self.batches = len(splitted_combinations)
         self.batch_number = 1
 
-        distances = list(map(self.evaluate_pairwise_similarity, splitted_combinations))
+        distances = list(map(self.evaluate_pairwise_distance, splitted_combinations))
         distances = np.concatenate(distances)
 
         return combinations[np.argsort(distances)], np.sort(distances)
